@@ -1,0 +1,7 @@
+backend/.gradle
+backend/.idea
+backend/build
+backend/db
+backend/gradle
+frontend/node_modules
+frontend/build
