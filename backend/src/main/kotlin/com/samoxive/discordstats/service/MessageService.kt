@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.stereotype.Component
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import javax.persistence.EntityExistsException
 
@@ -73,6 +74,7 @@ class MessageService(@Autowired private val messageRepository: MessageRepository
             guild.selfMember.hasPermission(it, Permission.MESSAGE_HISTORY, Permission.MESSAGE_READ)
         }
 
+        val latch = CountDownLatch(channels.size)
         for (channel in channels) {
             executor.execute {
                 val oldestMessageEntity = findOldestMessageInChannel(channel)
@@ -93,8 +95,14 @@ class MessageService(@Autowired private val messageRepository: MessageRepository
                     }
                 }
 
-                logger.error("Populated channel $channel in guild ${channel.guild}")
+                latch.countDown()
+                logger.info("Populated channel $channel in guild $guild")
             }
+        }
+
+        executor.execute {
+            latch.await()
+            logger.info("Populated guild $guild")
         }
     }
 
