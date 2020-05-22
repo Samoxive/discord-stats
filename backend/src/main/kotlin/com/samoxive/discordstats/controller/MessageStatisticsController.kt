@@ -1,9 +1,7 @@
 package com.samoxive.discordstats.controller
 
-import com.samoxive.discordstats.controller.response.ChannelMessageStatistics
-import com.samoxive.discordstats.controller.response.DataPoint
 import com.samoxive.discordstats.controller.response.GetMessageStatisticsResponse
-import com.samoxive.discordstats.controller.response.TextChannelDto
+import com.samoxive.discordstats.controller.response.toEntity
 import com.samoxive.discordstats.service.MessageService
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -13,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
-const val TIME_POINT_COUNT = 24
+const val TIME_POINT_COUNT = 23
 
 @RestController
 class MessageStatisticsController(
@@ -29,7 +27,7 @@ class MessageStatisticsController(
         val guild = jda.getGuildById(guildId) ?: throw RuntimeException("no guild with given id")
         val channels = guild.textChannels.filter {
             guild.selfMember.hasPermission(it, Permission.MESSAGE_READ, Permission.MESSAGE_HISTORY)
-        }
+        }.sortedBy { it.name }
 
         val messageEntities = messageService.findMessagesBetweenTimes(guild, startTime, endTime)
         val countMap = mutableMapOf<Long, Array<Int>>()
@@ -48,12 +46,9 @@ class MessageStatisticsController(
         val times = (dataCount).map { startTime + it * timeIncrements }
 
         return GetMessageStatisticsResponse(
-            channels.map { channel ->
-                ChannelMessageStatistics(
-                    TextChannelDto(channel.id, channel.name),
-                    dataCount.map { i -> DataPoint(times[i], countMap[channel.idLong]!![i]) }
-                )
-            }.sortedBy { it.channel.name }
+            channels.map { it.toEntity() },
+            times,
+            times.indices.map { i -> channels.map { channel -> countMap[channel.idLong]!![i] } }
         )
     }
 }

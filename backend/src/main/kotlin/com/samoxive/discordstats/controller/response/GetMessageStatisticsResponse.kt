@@ -1,10 +1,8 @@
 package com.samoxive.discordstats.controller.response
 
 data class GetMessageStatisticsResponse(
-    val data: List<ChannelMessageStatistics>
+    val channels: List<TextChannelDto>,
+    val timePoints: List<Long>,
+    val dataPoints: List<List<Int>>
 )
 
-data class ChannelMessageStatistics(
-    val channel: TextChannelDto,
-    val messageCounts: List<DataPoint>
-)
