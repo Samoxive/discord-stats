@@ -13,7 +13,7 @@ RUN apk --no-cache add curl unzip
 RUN curl -L https://services.gradle.org/distributions/gradle-6.4-bin.zip -o gradle-6.4-bin.zip && unzip gradle-6.4-bin.zip && rm gradle-6.4-bin.zip
 WORKDIR /tmp/backend
 COPY ./backend .
-RUN gradle build
+RUN gradle build --no-daemon
 
 FROM jvm
 WORKDIR /app
