@@ -15,6 +15,11 @@ interface MessageRepository : CrudRepository<MessageEntity, Long> {
         nativeQuery = true)
     fun findChannelMessageLeaderboard(guildId: Long, creationTimeStart: Long, creationTimeEnd: Long): List<Array<Long>>
 
+    @Query(
+        "select user_id, count(id) from messages where guild_id = ? and creation_time between ? and ? group by user_id;",
+        nativeQuery = true)
+    fun findMemberMessageLeaderboard(guildId: Long, creationTimeStart: Long, creationTimeEnd: Long): List<Array<Long>>
+
     fun deleteAllByGuildIdAndChannelId(guildId: Long, channelId: Long)
 
     @JvmDefault

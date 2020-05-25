@@ -210,7 +210,7 @@ export class ChannelMessageStatisticsTool extends Component<
                         type="date"
                         id="channelMessageStatisticsFromDate"
                         onChange={this.onFromDateChange}
-                        defaultValue={fromDate.toISOString().substr(0, 10)}
+                        value={fromDate.toISOString().substr(0, 10)}
                     />
                 </span>
                 <span>
@@ -219,7 +219,7 @@ export class ChannelMessageStatisticsTool extends Component<
                         type="date"
                         id="channelMessageStatisticsToDate"
                         onChange={this.onToDateChange}
-                        defaultValue={toDate.toISOString().substr(0, 10)}
+                        value={toDate.toISOString().substr(0, 10)}
                     />
                 </span>
                 <button onClick={this.onFetch}>Fetch data!</button>
@@ -233,7 +233,7 @@ export class ChannelMessageStatisticsTool extends Component<
                 {channelView === ChannelView.CHANNEL ? (
                     <select
                         onChange={this.onSelectedChannelChange}
-                        defaultValue={selectedChannel?.id}
+                        value={selectedChannel?.id}
                     >
                         <option></option>
                         {data?.channels.map((channel) => (

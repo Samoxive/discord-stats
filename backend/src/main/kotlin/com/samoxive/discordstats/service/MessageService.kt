@@ -67,6 +67,24 @@ class MessageService(@Autowired private val messageRepository: MessageRepository
         return countMap
     }
 
+    fun findMemberMessageLeaderboard(guild: Guild, startTime: Long, endTime: Long): Map<Long, Int> {
+        if (startTime < 0 || endTime < 0) {
+            throw IllegalArgumentException("startTime or endTime cannot be negative!")
+        }
+
+        if (startTime >= endTime) {
+            throw IllegalArgumentException("startTime cannot be further than endTime")
+        }
+
+        val rows = messageRepository.findMemberMessageLeaderboard(guild.idLong, startTime, endTime)
+        val countMap = mutableMapOf<Long, Int>()
+        for (row in rows) {
+            countMap[row[0]] = row[1].toInt()
+        }
+
+        return countMap
+    }
+
     fun insertMessage(message: Message) {
         try {
             messageRepository.save(message.toEntity())

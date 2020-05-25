@@ -55,3 +55,31 @@ export async function fetchChannelMessageLeaderboard(
     );
     return await response.json();
 }
+
+export type Member = {
+    id: string;
+    name: string;
+    nickname?: string;
+    avatarUrl: string;
+};
+
+export type MemberMessageCount = {
+    member: Member;
+    count: number;
+};
+
+export type MemberMessageLeaderboard = {
+    data: MemberMessageCount[];
+};
+
+export async function fetchMemberMessageLeaderboard(
+    guildId: string,
+    startTime: number,
+    endTime: number
+): Promise<MemberMessageLeaderboard> {
+    const response = await fetch(
+        environment.apiUrl +
+            `/guilds/${guildId}/memberMessageLeaderboard?startTime=${startTime}&endTime=${endTime}`
+    );
+    return await response.json();
+}

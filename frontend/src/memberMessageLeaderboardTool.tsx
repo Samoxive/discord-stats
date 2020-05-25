@@ -1,6 +1,8 @@
 import React, { Component, ChangeEvent } from "react";
 import { ToolProps } from "./toolPicker";
-import { ChannelMessageCount, fetchChannelMessageLeaderboard } from "./api";
+import { MemberMessageCount, fetchMemberMessageLeaderboard } from "./api";
+
+const ENTRIES_PER_PAGE = 10;
 
 enum TableSort {
     COUNT_DESC,
@@ -9,11 +11,12 @@ enum TableSort {
     NAME_ASC,
 }
 
-type ChannelMessageLeaderboardToolState = {
+type MemberMessageLeaderboardToolState = {
     sort: TableSort;
     fromDate: Date;
     toDate: Date;
-    data: ChannelMessageCount[] | null;
+    pageNumber: number;
+    data: MemberMessageCount[] | null;
 };
 
 const getInitialState = () => {
@@ -22,15 +25,16 @@ const getInitialState = () => {
         sort: TableSort.COUNT_DESC,
         fromDate: new Date(now - 1000 * 60 * 60 * 24 * 7),
         toDate: new Date(now),
+        pageNumber: 0,
         data: null,
     };
 };
 
-export class ChannelMessageLeaderboardTool extends Component<
+export class MemberMessageLeaderboardTool extends Component<
     ToolProps,
-    ChannelMessageLeaderboardToolState
+    MemberMessageLeaderboardToolState
 > {
-    state: ChannelMessageLeaderboardToolState = getInitialState();
+    state: MemberMessageLeaderboardToolState = getInitialState();
 
     componentDidUpdate(previousProps: ToolProps) {
         this.props.guild.id !== previousProps.guild.id &&
@@ -38,9 +42,9 @@ export class ChannelMessageLeaderboardTool extends Component<
     }
 
     sortData = (
-        data: ChannelMessageCount[],
+        data: MemberMessageCount[],
         sort: TableSort
-    ): ChannelMessageCount[] => {
+    ): MemberMessageCount[] => {
         data = data.map((x) => x);
 
         if (sort === TableSort.COUNT_ASC) {
@@ -48,9 +52,9 @@ export class ChannelMessageLeaderboardTool extends Component<
         } else if (sort === TableSort.COUNT_DESC) {
             data.sort((a, b) => b.count - a.count);
         } else if (sort === TableSort.NAME_ASC) {
-            data.sort((a, b) => -a.channel.name.localeCompare(b.channel.name));
+            data.sort((a, b) => -a.member.name.localeCompare(b.member.name));
         } else {
-            data.sort((a, b) => a.channel.name.localeCompare(b.channel.name));
+            data.sort((a, b) => a.member.name.localeCompare(b.member.name));
         }
 
         return data;
@@ -113,10 +117,33 @@ export class ChannelMessageLeaderboardTool extends Component<
         this.setState({ ...this.state, toDate: value });
     };
 
+    get totalPages() {
+        return this.state.data == null
+            ? 0
+            : Math.ceil(this.state.data.length / ENTRIES_PER_PAGE);
+    }
+
+    onPrev = () => {
+        this.setState({
+            ...this.state,
+            pageNumber: Math.max(0, this.state.pageNumber - 1),
+        });
+    };
+
+    onNext = () => {
+        this.setState({
+            ...this.state,
+            pageNumber: Math.min(
+                this.totalPages - 1,
+                this.state.pageNumber + 1
+            ),
+        });
+    };
+
     onFetch = async () => {
         const { guild } = this.props;
         const { fromDate, toDate } = this.state;
-        const data = await fetchChannelMessageLeaderboard(
+        const data = await fetchMemberMessageLeaderboard(
             guild.id,
             (fromDate.getTime() / 1000) | 0,
             (toDate.getTime() / 1000) | 0
@@ -125,26 +152,26 @@ export class ChannelMessageLeaderboardTool extends Component<
     };
 
     render() {
-        const { sort, fromDate, toDate, data } = this.state;
+        const { sort, fromDate, toDate, pageNumber, data } = this.state;
 
         return (
             <div>
                 <span>
-                    <label htmlFor="channelMessageLeaderboardFromDate">
+                    <label htmlFor="memberMessageLeaderboardFromDate">
                         From:
                     </label>
                     <input
                         type="date"
-                        id="channelMessageLeaderboardFromDate"
+                        id="memberMessageLeaderboardFromDate"
                         onChange={this.onFromDateChange}
                         value={fromDate.toISOString().substr(0, 10)}
                     />
                 </span>
                 <span>
-                    <label htmlFor="channelMessageLeaderboardToDate">To:</label>
+                    <label htmlFor="memberMessageLeaderboardToDate">To:</label>
                     <input
                         type="date"
-                        id="channelMessageLeaderboardToDate"
+                        id="memberMessageLeaderboardToDate"
                         onChange={this.onToDateChange}
                         value={toDate.toISOString().substr(0, 10)}
                     />
@@ -173,13 +200,59 @@ export class ChannelMessageLeaderboardTool extends Component<
                             </tr>
                         </thead>
                         <tbody>
-                            {data.map(({ channel, count }) => (
-                                <tr key={channel.id}>
-                                    <td>{channel.name}</td>
-                                    <td>{count}</td>
-                                </tr>
-                            ))}
+                            {data
+                                .slice(
+                                    pageNumber * ENTRIES_PER_PAGE,
+                                    (pageNumber + 1) * ENTRIES_PER_PAGE
+                                )
+                                .map(({ member, count }) => (
+                                    <tr key={member.id}>
+                                        <td
+                                            title={
+                                                member.nickname ?? member.name
+                                            }
+                                        >
+                                            <span>
+                                                <img
+                                                    src={
+                                                        member.avatarUrl +
+                                                        "?size=32"
+                                                    }
+                                                    style={{
+                                                        height: "16px",
+                                                        marginRight: "2px",
+                                                    }}
+                                                    alt=""
+                                                />
+                                            </span>
+                                            {member.name}
+                                        </td>
+                                        <td>{count}</td>
+                                    </tr>
+                                ))}
                         </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colSpan={2}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            justifyContent: "space-evenly",
+                                        }}
+                                    >
+                                        <button onClick={this.onPrev}>
+                                            Prev
+                                        </button>
+                                        {`${pageNumber + 1} / ${
+                                            this.totalPages
+                                        }`}
+                                        <button onClick={this.onNext}>
+                                            Next
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tfoot>
                     </table>
                 ) : null}
             </div>
