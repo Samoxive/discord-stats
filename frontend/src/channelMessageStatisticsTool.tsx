@@ -11,7 +11,7 @@ enum ChannelView {
     CHANNEL = "Channel",
 }
 
-type ChannelMessageStatisticsState = {
+type ChannelMessageStatisticsToolState = {
     channelView: ChannelView;
     selectedChannel: TextChannel | null;
     fromDate: Date;
@@ -32,9 +32,9 @@ const getInitialState = () => {
 
 export class ChannelMessageStatisticsTool extends Component<
     ToolProps,
-    ChannelMessageStatisticsState
+    ChannelMessageStatisticsToolState
 > {
-    state: ChannelMessageStatisticsState = getInitialState();
+    state: ChannelMessageStatisticsToolState = getInitialState();
 
     onChannelViewChange = (e: ChangeEvent<HTMLSelectElement>) => {
         this.setState({
@@ -83,7 +83,7 @@ export class ChannelMessageStatisticsTool extends Component<
 
     componentDidUpdate(previousProps: ToolProps) {
         this.props.guild.id !== previousProps.guild.id &&
-            this.setState(getInitialState(), () => console.log(this.state));
+            this.setState(getInitialState());
     }
 
     getChartData(): any[] {

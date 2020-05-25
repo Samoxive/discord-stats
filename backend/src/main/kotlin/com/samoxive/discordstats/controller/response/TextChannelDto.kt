@@ -7,4 +7,4 @@ data class TextChannelDto(
     val name: String
 )
 
-fun TextChannel.toEntity() = TextChannelDto(id, name)
+fun TextChannel.toDto() = TextChannelDto(id, name)

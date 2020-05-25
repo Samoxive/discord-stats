@@ -34,3 +34,24 @@ export async function fetchMessageStatistics(
     );
     return await response.json();
 }
+
+export type ChannelMessageCount = {
+    channel: TextChannel;
+    count: number;
+};
+
+export type ChannelMessageLeaderboard = {
+    data: ChannelMessageCount[];
+};
+
+export async function fetchChannelMessageLeaderboard(
+    guildId: string,
+    startTime: number,
+    endTime: number
+): Promise<ChannelMessageLeaderboard> {
+    const response = await fetch(
+        environment.apiUrl +
+            `/guilds/${guildId}/channelMessageLeaderboard?startTime=${startTime}&endTime=${endTime}`
+    );
+    return await response.json();
+}

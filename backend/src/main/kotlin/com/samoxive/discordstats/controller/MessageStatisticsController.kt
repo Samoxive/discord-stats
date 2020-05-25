@@ -1,7 +1,7 @@
 package com.samoxive.discordstats.controller
 
 import com.samoxive.discordstats.controller.response.GetMessageStatisticsResponse
-import com.samoxive.discordstats.controller.response.toEntity
+import com.samoxive.discordstats.controller.response.toDto
 import com.samoxive.discordstats.service.MessageService
 import net.dv8tion.jda.api.JDA
 import net.dv8tion.jda.api.Permission
@@ -46,7 +46,7 @@ class MessageStatisticsController(
         val times = (dataCount).map { startTime + it * timeIncrements }
 
         return GetMessageStatisticsResponse(
-            channels.map { it.toEntity() },
+            channels.map { it.toDto() },
             times,
             times.indices.map { i -> channels.map { channel -> countMap[channel.idLong]!![i] } }
         )

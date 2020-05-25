@@ -1,6 +1,7 @@
 import React, { Component, ChangeEvent } from "react";
 import { Guild } from "./api";
 import { ChannelMessageStatisticsTool } from "./channelMessageStatisticsTool";
+import { ChannelMessageLeaderboardTool } from "./channelMessageLeaderboardTool";
 
 const ToolNotSelected = (props: any) => <></>;
 
@@ -10,6 +11,7 @@ export type ToolProps = {
 
 enum Tool {
     CHANNEL_MESSAGE_STATISTICS = "1",
+    CHANNEL_MESSAGE_LEADERBOARD = "2",
 }
 
 type ToolPickerProps = {
@@ -24,6 +26,8 @@ function mapToolToComponent(tool?: Tool): typeof Component | null {
     switch (tool) {
         case Tool.CHANNEL_MESSAGE_STATISTICS:
             return ChannelMessageStatisticsTool;
+        case Tool.CHANNEL_MESSAGE_LEADERBOARD:
+            return ChannelMessageLeaderboardTool;
         default:
             return null;
     }
@@ -57,6 +61,9 @@ export class ToolPicker extends Component<ToolPickerProps, ToolPickerState> {
                     <option value=""></option>
                     <option value={Tool.CHANNEL_MESSAGE_STATISTICS}>
                         Channel Message Statistics
+                    </option>
+                    <option value={Tool.CHANNEL_MESSAGE_LEADERBOARD}>
+                        Channel Message Leaderboard
                     </option>
                 </select>
                 <ToolComponent guild={this.props.guild} />

@@ -9,4 +9,4 @@ data class GuildDto(
     val channels: List<TextChannelDto>
 )
 
-fun Guild.toEntity() = GuildDto(id, name, iconUrl, textChannels.map { it.toEntity() })
+fun Guild.toDto() = GuildDto(id, name, iconUrl, textChannels.map { it.toDto() })
